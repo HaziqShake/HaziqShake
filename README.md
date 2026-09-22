@@ -21,11 +21,6 @@ I build responsive web interfaces and cross-platform mobile apps, with a focus o
 - [**Elderly Care App**](https://github.com/HaziqShake/Elderly-Care) — React Native app for nursing homes: meds, meals, health, and hygiene tracking
 - [**Street Play**](https://github.com/HaziqShake/Street-Play) — Responsive e-commerce frontend with product sorting and filtering
 
-### 📊 GitHub Stats
-
-![Haziq's GitHub stats](https://github-readme-stats.vercel.app/api?username=HaziqShake&show_icons=true&theme=tokyonight)
-![Top languages](https://github-readme-stats.vercel.app/api/top-langs/?username=HaziqShake&layout=compact&theme=tokyonight)
-
 ### 📫 Connect with me
 
 - ✉️ shaikhhaziq73@gmail.com
