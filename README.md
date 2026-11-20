@@ -21,6 +21,12 @@ I build responsive web interfaces and cross-platform mobile apps, with a focus o
 - [**Elderly Care App**](https://github.com/HaziqShake/Elderly-Care) — React Native app for nursing homes: meds, meals, health, and hygiene tracking
 - [**Street Play**](https://github.com/HaziqShake/Street-Play) — Responsive e-commerce frontend with product sorting and filtering
 
+### Contributions
+
+![Combined GitHub and GitLab contributions](combined-contributions.svg)
+
+198 contributions in the last year: 112 on GitHub and 86 on GitLab. The GitLab work is on private repos, so only the counts show here, no code.
+
 ### 📫 Connect with me
 
 - ✉️ shaikhhaziq73@gmail.com
