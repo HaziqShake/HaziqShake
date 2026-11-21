@@ -47,6 +47,27 @@ def color_for(count):
 
 
 def fetch_github_counts(token):
+    """GitHub daily counts via GraphQL; falls back to the public
+    contributions page when the token cannot query it.
+
+    The automatic GITHUB_TOKEN in Actions is an installation token for
+    github-actions[bot], not Haziq's personal token: GraphQL answers its
+    contributionsCollection query for another user with HTTP 200 and an
+    errors-only body (no "data" key), which used to crash this script
+    with KeyError: 'data' (run 44881141782, 21 Nov 2026). The public
+    contributions page needs no auth and carries the same per-day counts
+    in each day cell's tool-tip, so it is a safe fallback.
+    """
+    if token:
+        try:
+            return _fetch_github_counts_graphql(token)
+        except Exception as e:  # noqa: BLE001 - any GraphQL failure -> scrape
+            print("warning: GitHub GraphQL failed (%s); falling back to "
+                  "public contributions page" % e, file=sys.stderr)
+    return _fetch_github_counts_scrape()
+
+
+def _fetch_github_counts_graphql(token):
     query = """
     query {
       user(login: "%s") {
@@ -72,12 +93,43 @@ def fetch_github_counts(token):
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.load(resp)
+    if "data" not in data or not data["data"] or not data["data"].get("user"):
+        raise RuntimeError("GraphQL returned no data: %s"
+                           % json.dumps(data.get("errors", data))[:300])
     coll = data["data"]["user"]["contributionsCollection"]
     counts = {}
     for week in coll["contributionCalendar"]["weeks"]:
         for day in week["contributionDays"]:
             counts[day["date"]] = day["contributionCount"]
     return counts, coll["totalContributions"]
+
+
+def _fetch_github_counts_scrape():
+    """Per-day counts from https://github.com/users/<user>/contributions.
+
+    Each day cell is <td data-date="YYYY-MM-DD" ...> followed by a
+    <tool-tip> reading "N contributions on Month Dth." (or "No
+    contributions on ..."). Public page, no auth needed.
+    """
+    import re
+    url = "https://github.com/users/%s/contributions" % GITHUB_USER
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        html = resp.read().decode("utf-8", "replace")
+    counts = {}
+    for m in re.finditer(r'data-date="(\d{4}-\d{2}-\d{2})"', html):
+        day = m.group(1)
+        seg = html[m.end():m.end() + 700]
+        t = re.search(r">(\d+) contributions? on", seg)
+        if t:
+            counts[day] = int(t.group(1))
+        elif "No contributions" in seg:
+            counts[day] = 0
+        else:
+            raise RuntimeError("could not parse count for %s" % day)
+    if not counts:
+        raise RuntimeError("no contribution days found on %s" % url)
+    return counts, sum(counts.values())
 
 
 def fetch_gitlab_counts():
@@ -207,10 +259,9 @@ def main():
     if args.github_json:
         gh_counts, gh_total = load_github_counts(args.github_json)
     else:
+        # No token is fine: fetch_github_counts falls back to scraping the
+        # public contributions page, which needs no auth.
         token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
-        if not token:
-            print("error: set GITHUB_TOKEN or pass --github-json", file=sys.stderr)
-            return 1
         gh_counts, gh_total = fetch_github_counts(token)
 
     if args.gitlab_json:
