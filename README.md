@@ -25,7 +25,7 @@ I build responsive web interfaces and cross-platform mobile apps, with a focus o
 
 ![Combined GitHub and GitLab contributions](combined-contributions.svg)
 
-220 contributions in the last year: 114 on GitHub and 106 on GitLab. The GitLab work is on private repos, so only the counts show here, no code.
+221 contributions in the last year: 115 on GitHub and 106 on GitLab. The GitLab work is on private repos, so only the counts show here, no code.
 
 ### 📫 Connect with me
 
